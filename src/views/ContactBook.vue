@@ -3,6 +3,7 @@
     <div class="col-md-10">
       <InputSearch v-model="searchText" />
     </div>
+
     <div class="mt-3 col-md-6">
       <h4>
         Danh bạ
@@ -11,17 +12,16 @@
       <ContactList
         v-if="filteredContactsCount > 0"
         :contacts="filteredContacts"
-        v-model="activeIndex"
+        v-model:activeIndex="activeIndex"
       />
-      <!-- v-model:activeIndex="activeIndex" (trong tai lieu la doan code nay thay cho line 14) -->
-      <p v-else>Không có liên hệ nào</p>
+      <p v-else>Không có liên hệ nào.</p>
 
-      <div class="mt-3 row justify-content-around align-item-center">
+      <div class="mt-3 row justify-content-around align-items-center">
         <button class="btn btn-sm btn-primary" @click="refreshList()">
           <i class="fas fa-redo"></i> Làm mới
         </button>
 
-        <button class="btn btn-sm btn-success" @click="goToAddContact()">
+        <button class="btn btn-sm btn-success" @click="goToAddContact">
           <i class="fas fa-plus"></i> Thêm mới
         </button>
 
@@ -37,16 +37,26 @@
           <i class="fas fa-address-card"></i>
         </h4>
         <ContactCard :contact="activeContact" />
+        <router-link
+          :to="{
+            name: 'contact.edit',
+            params: { id: activeContact._id },
+          }"
+        >
+          <span class="mt-2 badge badge-warning">
+            <i class="fas fa-edit"></i> Hiệu chỉnh</span
+          >
+        </router-link>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import ContactCard from "../components/ContactCard.vue";
-import InputSearch from "../components/InputSearch.vue";
-import ContactList from "../components/ContactList.vue";
-import ContactService from "../services/contact.service";
+import ContactCard from "@/components/ContactCard.vue";
+import InputSearch from "@/components/InputSearch.vue";
+import ContactList from "@/components/ContactList.vue";
+import ContactService from "@/services/contact.service";
 
 export default {
   components: {
@@ -69,22 +79,21 @@ export default {
       this.activeIndex = -1;
     },
   },
-
   computed: {
-    // Chuyển các đối tượng contact thành chuỗi để tiện cho tìm kiếm
-    contactStrings() {
+    // Chuyển các đối tượng contact thành chuỗi để tiện cho tìm kiếm.
+    contactString() {
       return this.contacts.map((contact) => {
         const { name, email, address, phone } = contact;
         return [name, email, address, phone].join("");
       });
     },
 
-    // Trả về các contact có chứa thông tin cần tìm kiếm
+    // Trả về các contact có chứa thông tin cần tìm kiếm.
     filteredContacts() {
       if (!this.searchText) return this.contacts;
-      return this.contacts.filter((_contact, index) => {
-        return this.contactStrings[index].includes(this.searchText);
-      });
+      return this.contacts.filter((_contact, index) =>
+        this.contactString[index].includes(this.searchText)
+      );
     },
 
     activeContact() {
@@ -112,7 +121,7 @@ export default {
     },
 
     async removeAllContacts() {
-      if (confirm("Bạn muốn xóa tất cả liên hệ??")) {
+      if (confirm("Bạn muốn xóa tất cả Liên hệ?")) {
         try {
           await ContactService.deleteAll();
           this.refreshList();
@@ -123,9 +132,10 @@ export default {
     },
 
     goToAddContact() {
-      this.$route.push({ name: "contact.add" });
+      this.$router.push({ name: "contact.add" });
     },
   },
+
   mounted() {
     this.refreshList();
   },
@@ -134,7 +144,7 @@ export default {
 
 <style scoped>
 .page {
-  text-align: left;
+  text-align: center;
   max-width: 750px;
 }
 </style>
